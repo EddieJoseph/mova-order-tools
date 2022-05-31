@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+
+\author{Logistik/Verpflegung}
+\title{Essensbestellung $NAME$}
+
+\usepackage[pdftex,
+pdfauthor={Logistik/Verpflegung},
+pdftitle={Essensbestellung $NAME$},
+pdfsubject={Verpflegung Einheiten},
+pdfkeywords={Essensbestellung Bestell\"ubersicht mova bula}]{hyperref}
+
+
+\usepackage[a4paper,landscape,
+left=30mm,
+right=30mm,
+top=20mm,
+bottom=45mm
+]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[iso,german]{isodate}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage{tabularx}
+
+
+\usepackage{fontspec}
+\defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+\setmainfont{Arial}
+\setmonofont{Lucida Sans Typewriter}
+
+\setlength{\headheight}{2.2cm}
+\setlength{\headwidth}{19.2cm}
+\renewcommand{\headrulewidth}{0pt}
+\fancyheadoffset[leh,roh]{2.3cm}
+\rhead{\includegraphics[width=5cm]{files/01_Logo/01_black/01_eps/cmyk/Mova22_Logo_black_def_cmyk_CC}}
+\lfoot{Version 1\\ \today}
+\cfoot{Essensbestellung $NAME$\\$ID$, $KITCHEN_ID$}
+\rfoot{mova\\ \thepage}
+
+\setlength{\parindent}{0pt}
+
+\begin{document}
+	\section*{Grundlagen}
+
+		\begin{tabular}{ll}
+            \textbf{Einheit}\\
+            Name & $NAME$ \\
+            Id & $ID$\\
+            K\"uchen Id & $KITCHEN_ID$\\
+            Lagerdaten & $CAMP_DATES$ \\
+            Anzahl Personen Einheit & $NR_PERS$\\
+            Anzahl Personen Internationale & $NR_INT$\\
+            Total & $NR_TOTAL$\\
+            \textbf{Besuchstag}\\
+            Besuchstag & $VISIT_DATE$\\
+            Anzahl Besuchende & $VISIT_NR$\\
+            \textbf{Essensbestellung}\\
+            Essensbudget & $BUSGET$ CHF\\
+            Kostenprognose Essensbestellung & $COST$ CHF\\
+            Verbleibendes Essensbudget & $REST$ CHF\hspace{1cm}(Kann f\"ur Eink\"aufe in der Migrova benutzt werden)  \\
+        \end{tabular}
+
+\vspace{1cm}
+%\color{red}
+\textit{Die Kosten sind mit den Lebensmittelpreisen vom M\"arz 2022 berechnet. Verrechnet werden aber die effektiven Preise in Juli / August. Es ist also noch mit kleineren Preis\"anderungen zu rechnen.}
+\color{black}
+
+\newpage
+\small
