@@ -10,11 +10,11 @@ from joblib import Parallel, delayed
 def generate_order_reports(orders,groups):
     print("starting order report generation.")
     expanded_groups = expand_groups(groups)
-    results = Parallel(n_jobs=8)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
-    # for index, row in expanded_groups.iterrows():
-    #     # if(index > 200 and index < 220):
-    #     print(str(index) + " of " + str(len(expanded_groups)))
-    #     report_for_group(orders, row)
+    #results = Parallel(n_jobs=8)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
+    for index, row in expanded_groups.iterrows():
+        if(index > 200 and index < 210):
+            print(str(index) + " of " + str(len(expanded_groups)))
+            report_for_group(orders, row)
 
 
 def expand_groups(groups:pd.DataFrame):
@@ -82,7 +82,7 @@ def init_file(orders:pd.DataFrame,group_exp:pd.Series,f):
     a = a.replace("$NAME$", tex_escape(str(group_exp['Einheitsname,'])))
     a = a.replace("$ID$", tex_escape(str(group_exp['Einheitsnummer, '])))
     a = a.replace("$KITCHEN_ID$", tex_escape(str(group_exp['KüchenId, '])))
-    a = a.replace("$CAMP_DATES$", tex_escape(str( group_exp['Datum Lager'].split('-')[0] + " - " +group_exp['Datum Lager'].split('-')[0])))
+    a = a.replace("$CAMP_DATES$", tex_escape(str( group_exp['Datum Lager'].split('-')[0] + " - " +group_exp['Datum Lager'].split('-')[1])))
     a = a.replace("$NR_PERS$", tex_escape(str(group_exp['Gesamtzahl Einheit, '])))
     a = a.replace("$NR_INT$", tex_escape(str(group_exp['Gesamtzahl Internationale Einheit, '])))
     a = a.replace("$NR_TOTAL$", tex_escape(str(group_exp['Gesamtzahl Einheit, '] + group_exp['Gesamtzahl Internationale Einheit, '])))
@@ -123,10 +123,10 @@ def add_line(row,group_exp:pd.Series,f):
     a = i.read()
     a=a.replace("$Name$", tex_escape(str(row['Name'])))
     a=a.replace("$Number$", tex_escape(str(row['Number'])))
-    a=a.replace("$OrderSizeKGL$", tex_escape(str(row['OrderSizeKGL'])))
-    a=a.replace("$OrderPriceInCU$", tex_escape(str(round(row['OrderPriceInCU'],2))))
-    a=a.replace("$OrderQtyInCU$", tex_escape(str(row['OrderQtyInCU'])))
-    a=a.replace("$Cost$", tex_escape(str(round(row['OrderQtyInCU']*row['OrderPriceInCU'],2))))
+    a=a.replace("$OrderSizeKGL$", tex_escape("{:.3f}".format(row['OrderSizeKGL'])))
+    a=a.replace("$OrderPriceInCU$", tex_escape("{:.2f}".format(round(row['OrderPriceInCU'],2))))
+    a=a.replace("$OrderQtyInCU$", tex_escape("{:.2f}".format(row['OrderQtyInCU'])))
+    a=a.replace("$Cost$", tex_escape("{:.2f}".format(round(row['OrderQtyInCU']*row['OrderPriceInCU'],2))))
     f.write(a)
 
 def end_page(group_exp:pd.Series,f):
