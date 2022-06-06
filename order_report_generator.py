@@ -10,11 +10,11 @@ from joblib import Parallel, delayed
 def generate_order_reports(orders,groups):
     print("starting order report generation.")
     expanded_groups = expand_groups(groups)
-    #results = Parallel(n_jobs=8)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
-    for index, row in expanded_groups.iterrows():
-        if(index > 200 and index < 210):
-            print(str(index) + " of " + str(len(expanded_groups)))
-            report_for_group(orders, row)
+    results = Parallel(n_jobs=8)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
+    # for index, row in expanded_groups.iterrows():
+    #     if(index > 200 and index < 220):
+    #         print(str(index) + " of " + str(len(expanded_groups)))
+    #         report_for_group(orders, row)
 
 
 def expand_groups(groups:pd.DataFrame):
@@ -165,6 +165,10 @@ def tex_escape(text):
         'è': r'\`e',
         'é': r'\'e',
         ' ': r'',
+        'â':'\^{a}',
+        'û': '\^{u}',
+        'ò': '\`o',
+        'ù': '\`u',
     }
     regex = re.compile('|'.join(re.escape(str(key)) for key in sorted(conv.keys(), key = lambda item: - len(item))))
     return regex.sub(lambda match: conv[match.group()], text)

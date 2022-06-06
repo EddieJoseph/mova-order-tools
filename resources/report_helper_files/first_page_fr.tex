@@ -1,13 +1,13 @@
 \documentclass[11pt]{article}
 
-\author{Logistik/Verpflegung}
-\title{Essensbestellung $NAME$}
+\author{Logistique/Logistique}
+\title{Commande de nourriture $NAME$}
 
 \usepackage[pdftex,
-pdfauthor={Logistik/Verpflegung},
-pdftitle={Essensbestellung $NAME$},
-pdfsubject={Verpflegung Einheiten},
-pdfkeywords={Essensbestellung Bestellübersicht mova bula}]{hyperref}
+pdfauthor={Logistique/Logistique},
+pdftitle={Commande de nourriture $NAME$},
+pdfsubject={Ravitaillement Unit\'e},
+pdfkeywords={Commande de nourriture Riepilogo dell ordinazione mova cafe}]{hyperref}
 
 
 \usepackage[a4paper,landscape,
@@ -26,6 +26,14 @@ bottom=45mm
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=magenta,
+	urlcolor=blue,
+	pdftitle={Overleaf Example},
+}
 
 
 \usepackage{fontspec}
@@ -39,35 +47,39 @@ bottom=45mm
 \fancyheadoffset[leh,roh]{2.3cm}
 \rhead{\includegraphics[width=5cm]{files/01_Logo/01_black/01_eps/cmyk/Mova22_Logo_black_def_cmyk_CC}}
 \lfoot{Version 1\\ \today}
-\cfoot{Essensbestellung $NAME$\\$ID$, $KITCHEN_ID$}
+\cfoot{Commande de nourriture $NAME$\\$ID$, $KITCHEN_ID$}
 \rfoot{mova\\ \thepage}
 
 \setlength{\parindent}{0pt}
 
 \begin{document}
-	\section*{Grundlagen}
+	\section*{Bases}
 
 		\begin{tabular}{ll}
-            \textbf{Einheit}\\
-            Name & $NAME$ \\
+            \textbf{Unit\'e}\\
+            Nom & $NAME$ \\
             Id & $ID$\\
-            Küchen Id & $KITCHEN_ID$\\
-            Lagerdaten & $CAMP_DATES$ \\
-            Anzahl Personen Einheit & $NR_PERS$\\
-            Anzahl Personen Internationale & $NR_INT$\\
+            Unit\'e de cuisine & $KITCHEN_ID$\\
+            Dates de camp & $CAMP_DATES$ \\
+            Nombre de personnes de l'unit\'e & $NR_PERS$\\
+            Nombre de personnes Scouts internationaux & $NR_INT$\\
             Total & $NR_TOTAL$\\
-            \textbf{Besuchstag}\\
-            Besuchstag & $VISIT_DATE$\\
-            Anzahl Besuchende & $VISIT_NR$\\
-            \textbf{Essensbestellung}\\
-            Essensbudget & $BUSGET$ CHF\\
-            Kostenprognose Essensbestellung & $COST$ CHF\\
-            Verbleibendes Essensbudget & $REST$ CHF\hspace{1cm}(Kann für Einkäufe in der Migrova benutzt werden)  \\
+            \textbf{Journ\'ee de visite}\\
+            Journ\'ee de visite & $VISIT_DATE$\\
+            Nombre de visiteurs:euse & $VISIT_NR$\\
+            \textbf{Commande de nourriture}\\
+            Budget pour la nourriture & $BUSGET$ CHF\\
+            Estimation des co\^{u}ts de la commande de nourriture & $COST$ CHF\\
+            Budget nourriture restant & $REST$ CHF\hspace{1cm}(pouvant être utilis\'e pour des achats \`a la Migrova)  \\
         \end{tabular}
 
 \vspace{1cm}
 %\color{red}
-\textit{Die Kosten sind mit den Lebensmittelpreisen vom März 2022 berechnet. Verrechnet werden aber die effektiven Preise in Juli / August. Es ist also noch mit kleineren Preisänderungen zu rechnen.}
+\textit{Votre cr\'eneau de retrait quotidien peut être consult\'e sur Orca.}\\
+
+\textit{Le total correspond \`a votre nombre d\'efinitif de participant-e-s (y compris les responsables, la cuisine et les autres b\'en\'evoles). Votre budget a \'et\'e calcul\'e sur cette base. Dans certains cas exceptionnels, il est possible que le total et le budget aient chang\'e depuis votre commande en mars. La commande ne peut cependant plus être adapt\'ee. Elle sera livr\'ee et factur\'ee telle quelle. Les possibilit\'es pour g\'erer la nourriture en trop ou manquante se trouvent sur le wikimova. (\href{https://www.mova.ch/fr/kochen}{www.mova.ch/fr/kochen})}\\
+
+\textit{Les co\^{u}ts sont calcul\'es avec les prix des denr\'ees alimentaires de mars 2022. Mais ce sont les prix effectifs en juillet / ao\^{u}t qui seront factur\'es. Il faut donc s'attendre \`a des changements de prix mineurs.}
 \color{black}
 
 \newpage
