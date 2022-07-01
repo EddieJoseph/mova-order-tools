@@ -7,3 +7,7 @@ def read_groups(groups_path:str='Einheiten.xlsx'):
 def read_orders(orders_path:str):
     df = pd.read_excel(orders_path, sheet_name=0)
     return df
+
+def read_prices(prices_path:str):
+    df = pd.read_excel(prices_path, sheet_name=0)
+    return df
