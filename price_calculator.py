@@ -21,7 +21,7 @@ def generate_price_report(orders: pd.DataFrame, groups: pd.DataFrame, prices: pd
 
 
 def calculate_daily_prices(orders: pd.DataFrame, groups: pd.DataFrame):
-    for date in pd.date_range('2022-07-22', '2022-08-08', freq='1d'):
+    for date in pd.date_range('2022-07-23', '2022-08-06', freq='1d'):
         orders_day = orders[orders['MenuPlanDate'] == date]
         cost_day = [];
         for index, row in groups.iterrows():
