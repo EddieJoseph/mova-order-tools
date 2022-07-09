@@ -31,7 +31,7 @@ def expand_groups(groups:pd.DataFrame):
     groups['Startdatum']=startdate
     groups['Enddatum'] = enddate
     groups['Tage'] = days
-    groups['Budget'] = (groups['Gesamtzahl Einheit, ']+groups['Gesamtzahl Internationale Einheit, ']) * (groups['Tage'] -1) * 8 + groups['Anzahl Besuchende'] * 2.5
+    groups['Budget'] = (groups['Gesamtzahl Einheit, ']+groups['Gesamtzahl Internationale Einheit, ']) * (groups['Tage']) * 8 + groups['Anzahl Besuchende'] * 2.5
     return groups
 
 
