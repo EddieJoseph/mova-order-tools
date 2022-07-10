@@ -7,9 +7,20 @@ import subprocess
 import re
 from joblib import Parallel, delayed
 
-def generate_order_reports(orders,groups):
+def generate_order_reports(orders,groups,prices):
     print("starting order report generation.")
     expanded_groups = expand_groups(groups)
+
+    current_price = []
+    for index, row in orders.iterrows():
+        try:
+            current_price.append(prices[prices['Number'] == row['Number']]['OrderPriceInCU'].values[0])
+        except:
+            print('Price missing', row['Number'], index)
+            current_price.append(0)
+    orders['CurrentPriceCU'] = current_price
+    orders['Cost'] = orders['OrderQytCU'] * orders['CurrentPriceCU']
+
     results = Parallel(n_jobs=8)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
     # for index, row in expanded_groups.iterrows():
     #     if(index > 200 and index < 220):
@@ -40,7 +51,6 @@ def report_for_group(orders:pd.DataFrame,group_exp:pd.Series):
     filename = "target/report_generation/Bestellung_"+str(group_exp['Einheitsnummer, '])+".tex"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename,'w') as f:
-
         if group_exp[' Korrespondenzsprache, '] == "it":
             locale.setlocale(locale.LC_ALL, 'it_CH')
         elif group_exp[' Korrespondenzsprache, '] == "fr":
@@ -50,7 +60,8 @@ def report_for_group(orders:pd.DataFrame,group_exp:pd.Series):
 
         init_file(orders.loc[orders['Einheitsnummer'] == group_exp['Einheitsnummer, ']],group_exp,f)
         for date in pd.date_range(group_exp['Startdatum'], group_exp['Enddatum'], freq='1d'):
-            orders_per_group_day = orders.loc[(orders['Einheitsnummer'] == group_exp['Einheitsnummer, ']) & (orders['MenuPlanDate'] == date),['Name', 'Number', 'OrderSizeKGL', 'OrderPriceInCU', 'OrderQtyInCU', 'TotalOrderAmount']]
+            #print(orders)
+            orders_per_group_day = orders.loc[(orders['Einheitsnummer'] == group_exp['Einheitsnummer, ']) & (orders['MenuPlanDate'] == date),['Name', 'Number', 'OrderSizeKGL', 'CurrentPriceCU', 'OrderQytCU', 'TotalOrderAmount','Cost']]
             if(orders_per_group_day.empty):
                 empty_page(date, group_exp, f)
             else:
@@ -77,7 +88,7 @@ def report_for_group(orders:pd.DataFrame,group_exp:pd.Series):
 def init_file(orders:pd.DataFrame,group_exp:pd.Series,f):
     i = open("resources/report_helper_files/first_page_"+str(group_exp[' Korrespondenzsprache, '])+".tex", "r")
     a = i.read()
-    cost = sum(orders['OrderQtyInCU']*orders['OrderPriceInCU'])
+    cost = sum(orders['Cost'])
 
     a = a.replace("$NAME$", tex_escape(str(group_exp['Einheitsname,'])))
     a = a.replace("$ID$", tex_escape(str(group_exp['Einheitsnummer, '])))
@@ -124,9 +135,9 @@ def add_line(row,group_exp:pd.Series,f):
     a=a.replace("$Name$", tex_escape(str(row['Name'])))
     a=a.replace("$Number$", tex_escape(str(row['Number'])))
     a=a.replace("$OrderSizeKGL$", tex_escape("{:.3f}".format(row['OrderSizeKGL'])))
-    a=a.replace("$OrderPriceInCU$", tex_escape("{:.2f}".format(round(row['OrderPriceInCU'],2))))
-    a=a.replace("$OrderQtyInCU$", tex_escape("{:.2f}".format(row['OrderQtyInCU'])))
-    a=a.replace("$Cost$", tex_escape("{:.2f}".format(round(row['OrderQtyInCU']*row['OrderPriceInCU'],2))))
+    a=a.replace("$OrderPriceInCU$", tex_escape("{:.2f}".format(round(row['CurrentPriceCU'],2))))
+    a=a.replace("$OrderQtyInCU$", tex_escape("{:.2f}".format(row['OrderQytCU'])))
+    a=a.replace("$Cost$", tex_escape("{:.2f}".format(round(row['Cost'],2))))
     f.write(a)
 
 def end_page(group_exp:pd.Series,f):
