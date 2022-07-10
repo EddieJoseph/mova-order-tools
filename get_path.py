@@ -20,5 +20,5 @@ def get_price_path():
     if(len(sys.argv)<4):
         print("no input file found. define input file as third argument")
         sys.exit(-1)
-    print("groups input file: ", sys.argv[3])
+    print("price input file: ", sys.argv[3])
     return sys.argv[3]
