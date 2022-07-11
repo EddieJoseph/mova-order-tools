@@ -23,13 +23,13 @@ def generate_price_report(orders: pd.DataFrame, groups: pd.DataFrame, prices: pd
 
     # print(current_price)
     kitchen_cost_per_day = calculate_daily_prices(orders, kitchens)
-    kitchen_cost_per_day.to_excel('Tageskosten.xlsx')
+    kitchen_cost_per_day.to_excel('Tageskosten.xlsx', index=False)
 
 
 
 # MIG111013000000
 def expand_kids(groups:pd.DataFrame):
-    print()
+    #print()
 
     startdate = []
     enddate = []
@@ -48,15 +48,18 @@ def expand_kids(groups:pd.DataFrame):
 
     kitchens = pd.DataFrame(groups['KüchenId, '].drop_duplicates())
 
+    kids_num = []
     haupteinheitnummer = []
     kontakt = []
     gesamtzahl = []
     gesamtzahl_internationale = []
     haupteinheitsname = []
     butget = []
+    einheitsnummern = []
 
     for index, row in kitchens.iterrows():
         groups_in_kitchen = groups[groups['KüchenId, '] == row['KüchenId, ']]
+        kids_num.append(int(str(row['KüchenId, '])[2:]))
         bigger = groups_in_kitchen[groups_in_kitchen['Budget'] == groups_in_kitchen['Budget'].max()]
         haupteinheitnummer.append(bigger['Einheitsnummer, '].values[0])
         haupteinheitsname.append(bigger['Einheitsname,'].values[0])
@@ -64,15 +67,25 @@ def expand_kids(groups:pd.DataFrame):
         gesamtzahl.append(groups_in_kitchen['Gesamtzahl Einheit, '].sum())
         gesamtzahl_internationale.append(groups_in_kitchen['Gesamtzahl Internationale Einheit, '].sum())
         butget.append(groups_in_kitchen['Budget'].sum())
+        numbers = ""
+        for iindex, ivalue in groups_in_kitchen['Einheitsnummer, '].items():
+            numbers = numbers + str(ivalue) + ', '
+        einheitsnummern.append(numbers[0:-2])
+
+    kitchens['KüchenId_Num'] = kids_num
     kitchens['haupteinheitnummer'] = haupteinheitnummer
+    kitchens['einheitsnummern'] = einheitsnummern
     kitchens['Haupteinheitsname'] = haupteinheitsname
     kitchens['kontakt'] = kontakt
     kitchens['Gesamtzahl'] = gesamtzahl
     kitchens['Gesamtzahl_internationale'] = gesamtzahl_internationale
     kitchens['Butget'] = butget
 
+    print(kitchens['KüchenId_Num'])
+
+
     # kitchens.to_excel('Küchenaggregation.xlsx')
-    return kitchens
+    return kitchens.sort_values(by=['KüchenId_Num'])
 
 
 
@@ -84,7 +97,7 @@ def calculate_daily_prices(orders: pd.DataFrame, kitchens: pd.DataFrame):
         for index, row in kitchens.iterrows():
 
             # print(orders_day['KID'])
-            print(row['KüchenId, '])
+            #print(row['KüchenId, '])
 
             cost_day.append(orders_day[orders_day['KID'] == row['KüchenId, ']]['Cost'].sum())
         kitchens[date] = cost_day
