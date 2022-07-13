@@ -14,6 +14,7 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
 
     KID = []
     classes = []
+    order = []
     for index, row in orders.iterrows():
         try:
             KID.append(groups[groups['Einheitsnummer, '] == row['Einheitsnummer']]['KüchenId, '].values[0])
@@ -27,22 +28,28 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
             print('Product not found in classification', row['Number'])
             classes.append('NaN')
 
+        try:
+            order.append(classification[classification['Movanummer'] == row['Number']]['Sortierung'].values[0])
+        except:
+            print('Product not found in classification', row['Number'])
+            order.append(0)
+
     #orders['CurrentPriceCU'] = current_price
     orders['KID'] = KID
     #orders['Cost'] = orders['OrderQytCU'] * orders['CurrentPriceCU']
     orders['Class'] = classes
-
+    orders['Order'] = order
     #print(orders)
     generate_pickinglists(kitchens, orders)
 
 def generate_pickinglists(kitchens:pd.DataFrame, orders:pd.DataFrame):
     for k_index, k_row in kitchens.iterrows():
-        # results = Parallel(n_jobs=8)(delayed(generate_pickinglist_for_kitchen)(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date) for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'))
-        for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
-            if(k_row['KüchenId, '] == "K_40"):
-            # if(k_index == 1):
-                print(k_row['KüchenId, '], orders['MenuPlanDate'], orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
-                generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date)
+        results = Parallel(n_jobs=8)(delayed(generate_pickinglist_for_kitchen)(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date) for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'))
+        # for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
+        #     if(k_row['KüchenId, '] == "K_40"):
+        #     # if(k_index == 1):
+        #         print(k_row['KüchenId, '], orders['MenuPlanDate'], orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
+        #         generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date)
 
 def setup_first_table(kitchen, date, f):
     i = open(
@@ -100,18 +107,47 @@ def end_document(kitchen,f):
     f.write(a)
 
 
+def aggregate_orders(orders:pd.DataFrame):
+    unique_orders = orders.groupby('Number').agg({
+        'Einheitsnummer' : 'min',
+        'Einheitsname': 'min',
+        'E-Mailadresse': 'min',
+        'MenuPlanDate': 'min',
+        'Code': 'min',
+        'Name': 'min',
+        'Number': 'min',
+        'CodeCategory': 'min',
+        'Category': 'min',
+        'OrderSizeKGL': 'min',
+        'CalculatedQtySizeKGL': 'sum',
+        'SuggestedOrderQtyInCU': 'sum',
+        'OrderQytCU': 'sum',
+        'Amount KGL_new': 'sum',
+        'OrderPriceInCU': 'min',
+        'TotalOrderAmount': 'sum',
+        'KID': 'min',
+        'Class': 'min',
+        'Order': 'min'
+    })
+
+    return unique_orders.sort_values(by=['Order'])
+
 def generate_pickinglist_for_kitchen(orders:pd.DataFrame, kitchen:pd.Series, date):
-    filename = "target/pickinglist_generation/Bestellung_" + str(kitchen['KüchenId, ']) + "_" + str(date.strftime('%d.%m.%Y')) + ".tex"
+    print("Starting generation for", str(kitchen['KüchenId, ']))
+    filename = "target/pickinglist_generation/Komissionierungsliste_" + str(kitchen['KüchenId, ']) + "_" + str(date.strftime('%d.%m.%Y')) + ".tex"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    aggregated_orders = aggregate_orders(orders)
+
     with open(filename, 'w') as f:
         setup_first_table(kitchen,date,f)
-        for index, order in orders[orders['Class']==1].iterrows():
+        for index, order in aggregated_orders[aggregated_orders['Class']==1].iterrows():
             first_table_line(order,f)
         setup_second_table(kitchen,f)
-        for index, order in orders[orders['Class']==2].iterrows():
+        for index, order in aggregated_orders[aggregated_orders['Class']==2].iterrows():
             first_table_line(order,f)
         setup_third_table(kitchen,f)
-        for index, order in orders[orders['Class']==3].iterrows():
+        for index, order in aggregated_orders[aggregated_orders['Class']==3].iterrows():
             third_table_line(order,f)
         end_document(kitchen,f)
 
@@ -124,7 +160,7 @@ def generate_pickinglist_for_kitchen(orders:pd.DataFrame, kitchen:pd.Series, dat
             latex_log.write(str(line))
         process.wait()
         latex_log.write("Exit Code: " + str(process.returncode))
-    outputfilename = "output/komissionierung/Bestellung_" + str(kitchen['KüchenId, ']) + "_" + str(date.strftime('%d.%m.%Y')) + ".pdf"
+    outputfilename = "output/komissionierung/Komissionierungsliste_" + str(kitchen['KüchenId, ']) + "_" + str(date.strftime('%d.%m.%Y')) + ".pdf"
     os.makedirs(os.path.dirname(outputfilename), exist_ok=True)
 
     shutil.move(filename[0:-3] + "pdf", outputfilename)
