@@ -80,7 +80,7 @@ def report_for_group(orders:pd.DataFrame,group_exp:pd.Series):
             latex_log.write(str(line))
         process.wait()
         latex_log.write("Exit Code: "+str(process.returncode))
-    outputfilename = "output/Bestellung_"+str(group_exp['Einheitsnummer, '])+".pdf"
+    outputfilename = "output/bestellung/Bestellung_"+str(group_exp['Einheitsnummer, '])+".pdf"
     os.makedirs(os.path.dirname(outputfilename), exist_ok=True)
 
     shutil.move(filename[0:-3]+"pdf",outputfilename)

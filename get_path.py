@@ -22,3 +22,10 @@ def get_price_path():
         sys.exit(-1)
     print("price input file: ", sys.argv[3])
     return sys.argv[3]
+
+def get_classification_path():
+    if(len(sys.argv)<5):
+        print("no input file found. define input file as third argument")
+        sys.exit(-1)
+    print("classification input file: ", sys.argv[4])
+    return sys.argv[4]

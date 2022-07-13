@@ -56,6 +56,9 @@ def expand_kids(groups:pd.DataFrame):
     haupteinheitsname = []
     butget = []
     einheitsnummern = []
+    startdaten = []
+    enddaten = []
+    language = []
 
     for index, row in kitchens.iterrows():
         groups_in_kitchen = groups[groups['KüchenId, '] == row['KüchenId, ']]
@@ -67,6 +70,9 @@ def expand_kids(groups:pd.DataFrame):
         gesamtzahl.append(groups_in_kitchen['Gesamtzahl Einheit, '].sum())
         gesamtzahl_internationale.append(groups_in_kitchen['Gesamtzahl Internationale Einheit, '].sum())
         butget.append(groups_in_kitchen['Budget'].sum())
+        startdaten.append(groups_in_kitchen['Startdatum'].min())
+        enddaten.append(groups_in_kitchen['Enddatum'].max())
+        language.append(bigger['Sprache, '].values[0])
         numbers = ""
         for iindex, ivalue in groups_in_kitchen['Einheitsnummer, '].items():
             numbers = numbers + str(ivalue) + ', '
@@ -74,14 +80,18 @@ def expand_kids(groups:pd.DataFrame):
 
     kitchens['KüchenId_Num'] = kids_num
     kitchens['haupteinheitnummer'] = haupteinheitnummer
+    kitchens['Korrespondenzsprache'] = language
     kitchens['einheitsnummern'] = einheitsnummern
     kitchens['Haupteinheitsname'] = haupteinheitsname
     kitchens['kontakt'] = kontakt
     kitchens['Gesamtzahl'] = gesamtzahl
     kitchens['Gesamtzahl_internationale'] = gesamtzahl_internationale
     kitchens['Butget'] = butget
+    kitchens['Startdatum'] = startdaten
+    kitchens['Enddatum'] = enddaten
 
-    print(kitchens['KüchenId_Num'])
+
+    #print(kitchens['KüchenId_Num'])
 
 
     # kitchens.to_excel('Küchenaggregation.xlsx')
