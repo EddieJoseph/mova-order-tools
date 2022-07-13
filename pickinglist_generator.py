@@ -37,16 +37,16 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
 
 def generate_pickinglists(kitchens:pd.DataFrame, orders:pd.DataFrame):
     for k_index, k_row in kitchens.iterrows():
-        results = Parallel(n_jobs=8)(delayed(generate_pickinglist_for_kitchen)(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date) for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'))
-        # for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
-        #     if(k_row['KüchenId, '] == "K_40"):
-        #     if(k_index == 1):
-        #         print(k_row['KüchenId, '], orders['MenuPlanDate'], orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
-        #         generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date)
+        # results = Parallel(n_jobs=8)(delayed(generate_pickinglist_for_kitchen)(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date) for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'))
+        for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
+            if(k_row['KüchenId, '] == "K_40"):
+            # if(k_index == 1):
+                print(k_row['KüchenId, '], orders['MenuPlanDate'], orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
+                generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date)
 
 def setup_first_table(kitchen, date, f):
     i = open(
-        "resources/picking_helper_files/0_setup_first_table_" + str(kitchen['Korrespondenzsprache']) + ".tex",
+        "resources/picking_helper_files/0_setup_first_table" + ".tex",
         "r")
     a = i.read()
     a = a.replace("$KUECHENID$", tex_escape(str(kitchen['KüchenId, '])))
@@ -67,7 +67,7 @@ def first_table_line(order, f):
 
 def setup_second_table(kitchen, f):
     i = open(
-        "resources/picking_helper_files/2_setup_second_table_" + str(kitchen['Korrespondenzsprache']) + ".tex",
+        "resources/picking_helper_files/2_setup_second_table" + ".tex",
         "r")
     a = i.read()
     #a = a.replace("$DATE$", tex_escape(str(date.strftime('&A %d.%m.%Y'))))
@@ -75,7 +75,7 @@ def setup_second_table(kitchen, f):
 
 def setup_third_table(kitchen, f):
     i = open(
-        "resources/picking_helper_files/3_setup_third_table_" + str(kitchen['Korrespondenzsprache']) + ".tex",
+        "resources/picking_helper_files/3_setup_third_table" + ".tex",
         "r")
     a = i.read()
     #a = a.replace("$DATE$", tex_escape(str(date.strftime('&A %d.%m.%Y'))))
@@ -94,7 +94,7 @@ def third_table_line(order, f):
 
 def end_document(kitchen,f):
     i = open(
-        "resources/picking_helper_files/5_end_document_" + str(kitchen['Korrespondenzsprache']) + ".tex",
+        "resources/picking_helper_files/5_end_document" + ".tex",
         "r")
     a = i.read()
     f.write(a)
