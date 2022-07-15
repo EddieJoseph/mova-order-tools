@@ -9,7 +9,7 @@ from joblib import Parallel, delayed
 from order_report_generator import tex_escape
 from price_calculator import expand_kids
 
-
+# Should generate 8037 Files
 def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: pd.DataFrame, classification: pd.DataFrame):
     kitchens = expand_kids(groups)
 
@@ -52,25 +52,11 @@ def generate_pickinglists(kitchens:pd.DataFrame, orders:pd.DataFrame):
     # for k_index, k_row in kitchens.iterrows():
     #     generation_helper(k_index, k_row, orders)
 
-    # for k_index, k_row in kitchens.iterrows():
-    #     # results = Parallel(n_jobs=8)(delayed(generate_pickinglist_for_kitchen)(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date) for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'))
-    #     generation_helper(k_index, k_row, orders)
-    #
-    #
-    #     # for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
-    #     #     if(k_row['KüchenId, '] == "K_40"):
-    #     #     # if(k_index == 1):
-    #     #         print(k_row['KüchenId, '], orders['MenuPlanDate'], orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
-    #     #         generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date)
-
 def generation_helper(k_index, k_row:pd.Series, orders:pd.DataFrame):
     outputfilename = "output/komissionierung/Komissionierungsliste_" + str(k_row['KüchenId, ']) + "_" + str(k_row['Enddatum'].strftime('%d.%m.%Y')) + ".pdf"
     if(not os.path.exists(outputfilename)):
         print("starting geneation (" + str(k_row['KüchenId, ']) + ")")
         for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
-            # if (k_row['KüchenId, '] == "K_40"):
-                # if(k_index == 1):
-                # print(k_row['KüchenId, '], orders['MenuPlanDate'],orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
             generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)], k_row, date)
     else:
         print("skipping geneation ("+ str(k_row['KüchenId, '])  +")")
@@ -101,7 +87,6 @@ def setup_second_table(kitchen, f):
         "resources/picking_helper_files/2_setup_second_table" + ".tex",
         "r")
     a = i.read()
-    #a = a.replace("$DATE$", tex_escape(str(date.strftime('&A %d.%m.%Y'))))
     f.write(a)
 
 def setup_third_table(kitchen, f):
@@ -109,7 +94,6 @@ def setup_third_table(kitchen, f):
         "resources/picking_helper_files/3_setup_third_table" + ".tex",
         "r")
     a = i.read()
-    #a = a.replace("$DATE$", tex_escape(str(date.strftime('&A %d.%m.%Y'))))
     f.write(a)
 
 def third_table_line(order, f):
