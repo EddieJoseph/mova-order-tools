@@ -21,7 +21,7 @@ def generate_order_reports(orders,groups,prices):
     orders['CurrentPriceCU'] = current_price
     orders['Cost'] = orders['OrderQytCU'] * orders['CurrentPriceCU']
 
-    results = Parallel(n_jobs=8)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
+    results = Parallel(n_jobs=32)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
     # for index, row in expanded_groups.iterrows():
     #     if(index > 200 and index < 220):
     #         print(str(index) + " of " + str(len(expanded_groups)))
