@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+from datetime import datetime
 
 import pandas as pd
 from joblib import Parallel, delayed
@@ -39,17 +40,40 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
     #orders['Cost'] = orders['OrderQytCU'] * orders['CurrentPriceCU']
     orders['Class'] = classes
     orders['Order'] = order
+
+    if orders[(orders['Class'] != 1) & (orders['Class'] != 2) & (orders['Class'] != 3) ].shape[0] > 0:
+        print(orders[(orders['Class'] != 1) & (orders['Class'] != 2) & (orders['Class'] != 3) ])
+        raise Exception("product without class")
     #print(orders)
     generate_pickinglists(kitchens, orders)
 
 def generate_pickinglists(kitchens:pd.DataFrame, orders:pd.DataFrame):
-    for k_index, k_row in kitchens.iterrows():
-        results = Parallel(n_jobs=8)(delayed(generate_pickinglist_for_kitchen)(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date) for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'))
-        # for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
-        #     if(k_row['KüchenId, '] == "K_40"):
-        #     # if(k_index == 1):
-        #         print(k_row['KüchenId, '], orders['MenuPlanDate'], orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
-        #         generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date)
+    results = Parallel(n_jobs=32)(delayed(generation_helper)(k_index, k_row, orders) for k_index, k_row in kitchens.iterrows())
+    # for k_index, k_row in kitchens.iterrows():
+    #     generation_helper(k_index, k_row, orders)
+
+    # for k_index, k_row in kitchens.iterrows():
+    #     # results = Parallel(n_jobs=8)(delayed(generate_pickinglist_for_kitchen)(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date) for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'))
+    #     generation_helper(k_index, k_row, orders)
+    #
+    #
+    #     # for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
+    #     #     if(k_row['KüchenId, '] == "K_40"):
+    #     #     # if(k_index == 1):
+    #     #         print(k_row['KüchenId, '], orders['MenuPlanDate'], orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
+    #     #         generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)],k_row,date)
+
+def generation_helper(k_index, k_row:pd.Series, orders:pd.DataFrame):
+    outputfilename = "output/komissionierung/Komissionierungsliste_" + str(k_row['KüchenId, ']) + "_" + str(k_row['Enddatum'].strftime('%d.%m.%Y')) + ".pdf"
+    if(not os.path.exists(outputfilename)):
+        print("starting geneation (" + str(k_row['KüchenId, ']) + ")")
+        for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
+            # if (k_row['KüchenId, '] == "K_40"):
+                # if(k_index == 1):
+                # print(k_row['KüchenId, '], orders['MenuPlanDate'],orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)])
+            generate_pickinglist_for_kitchen(orders[(orders['KID'] == k_row['KüchenId, ']) & (orders['MenuPlanDate'] == date)], k_row, date)
+    else:
+        print("skipping geneation ("+ str(k_row['KüchenId, '])  +")")
 
 def setup_first_table(kitchen, date, f):
     i = open(
@@ -106,6 +130,12 @@ def end_document(kitchen,f):
     a = i.read()
     f.write(a)
 
+def fire_ending(kitchen,f):
+    i = open(
+        "resources/picking_helper_files/5_end_document_fire" + ".tex",
+        "r")
+    a = i.read()
+    f.write(a)
 
 def aggregate_orders(orders:pd.DataFrame):
     unique_orders = orders.groupby('Number').agg({
@@ -133,7 +163,6 @@ def aggregate_orders(orders:pd.DataFrame):
     return unique_orders.sort_values(by=['Order'])
 
 def generate_pickinglist_for_kitchen(orders:pd.DataFrame, kitchen:pd.Series, date):
-    print("Starting generation for", str(kitchen['KüchenId, ']))
     filename = "target/pickinglist_generation/Komissionierungsliste_" + str(kitchen['KüchenId, ']) + "_" + str(date.strftime('%d.%m.%Y')) + ".tex"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
@@ -149,7 +178,10 @@ def generate_pickinglist_for_kitchen(orders:pd.DataFrame, kitchen:pd.Series, dat
         setup_third_table(kitchen,f)
         for index, order in aggregated_orders[aggregated_orders['Class']==3].iterrows():
             third_table_line(order,f)
-        end_document(kitchen,f)
+        if (date == datetime.strptime('24.7.22', '%d.%m.%y') or date == datetime.strptime('31.7.22', '%d.%m.%y')):
+            fire_ending(kitchen,f)
+        else:
+            end_document(kitchen,f)
 
     command = "lualatex.exe -synctex=1 -interaction=nonstopmode -output-directory=target/pickinglist_generation \""+filename+"\""
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
