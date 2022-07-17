@@ -48,12 +48,13 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
     generate_pickinglists(kitchens, orders)
 
 def generate_pickinglists(kitchens:pd.DataFrame, orders:pd.DataFrame):
-    results = Parallel(n_jobs=32)(delayed(generation_helper)(k_index, k_row, orders) for k_index, k_row in kitchens.iterrows())
-    # for k_index, k_row in kitchens.iterrows():
-    #     generation_helper(k_index, k_row, orders)
+    # results = Parallel(n_jobs=32)(delayed(generation_helper)(k_index, k_row, orders) for k_index, k_row in kitchens.iterrows())
+    for k_index, k_row in kitchens.iterrows():
+        if k_row['KüchenId, '] == 'K_40':
+            generation_helper(k_index, k_row, orders)
 
 def generation_helper(k_index, k_row:pd.Series, orders:pd.DataFrame):
-    outputfilename = "output/komissionierung/Komissionierungsliste_" + str(k_row['KüchenId, ']) + "_" + str(k_row['Enddatum'].strftime('%d.%m.%Y')) + ".pdf"
+    outputfilename = "output/komissionierung/Komissionierungsliste_" + str(k_row['Enddatum'].strftime('%Y.%m.%d')) + "_" + str(k_row['KüchenId, ']) + "_.pdf"
     if(not os.path.exists(outputfilename)):
         print("starting geneation (" + str(k_row['KüchenId, ']) + ")")
         for date in pd.date_range(k_row['Startdatum'], k_row['Enddatum'], freq='1d'):
@@ -147,7 +148,7 @@ def aggregate_orders(orders:pd.DataFrame):
     return unique_orders.sort_values(by=['Order'])
 
 def generate_pickinglist_for_kitchen(orders:pd.DataFrame, kitchen:pd.Series, date):
-    filename = "target/pickinglist_generation/Komissionierungsliste_" + str(kitchen['KüchenId, ']) + "_" + str(date.strftime('%d.%m.%Y')) + ".tex"
+    filename = "target/pickinglist_generation/Komissionierungsliste_" +str(date.strftime('%Y.%m.%d')) + "_" + str(kitchen['KüchenId, ']) + "_.tex"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     aggregated_orders = aggregate_orders(orders)
@@ -169,14 +170,14 @@ def generate_pickinglist_for_kitchen(orders:pd.DataFrame, kitchen:pd.Series, dat
 
     command = "lualatex.exe -synctex=1 -interaction=nonstopmode -output-directory=target/pickinglist_generation \""+filename+"\""
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    logfilename = "target/pickinglist_generation/lualatex_" + str(kitchen['KüchenId, ']) + "_" + str(date.strftime('%d.%m.%Y')) + ".log"
+    logfilename = "target/pickinglist_generation/lualatex_" + str(date.strftime('%Y.%m.%d')) + "_" + str(kitchen['KüchenId, ']) + "_.log"
     os.makedirs(os.path.dirname(logfilename), exist_ok=True)
     with open(logfilename, 'w') as latex_log:
         for line in process.stdout:
             latex_log.write(str(line))
         process.wait()
         latex_log.write("Exit Code: " + str(process.returncode))
-    outputfilename = "output/komissionierung/Komissionierungsliste_" + str(kitchen['KüchenId, ']) + "_" + str(date.strftime('%d.%m.%Y')) + ".pdf"
+    outputfilename = "output/komissionierung/Komissionierungsliste_" + str(date.strftime('%Y.%m.%d')) + "_" + str(kitchen['KüchenId, ']) + "_.pdf"
     os.makedirs(os.path.dirname(outputfilename), exist_ok=True)
 
     shutil.move(filename[0:-3] + "pdf", outputfilename)
