@@ -48,10 +48,10 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
     generate_pickinglists(kitchens, orders)
 
 def generate_pickinglists(kitchens:pd.DataFrame, orders:pd.DataFrame):
-    # results = Parallel(n_jobs=32)(delayed(generation_helper)(k_index, k_row, orders) for k_index, k_row in kitchens.iterrows())
-    for k_index, k_row in kitchens.iterrows():
-        if k_row['KüchenId, '] == 'K_40':
-            generation_helper(k_index, k_row, orders)
+    results = Parallel(n_jobs=32)(delayed(generation_helper)(k_index, k_row, orders) for k_index, k_row in kitchens.iterrows())
+    # for k_index, k_row in kitchens.iterrows():
+    #     if k_row['KüchenId, '] == 'K_40':
+    #         generation_helper(k_index, k_row, orders)
 
 def generation_helper(k_index, k_row:pd.Series, orders:pd.DataFrame):
     outputfilename = "output/komissionierung/Komissionierungsliste_" + str(k_row['Enddatum'].strftime('%Y.%m.%d')) + "_" + str(k_row['KüchenId, ']) + "_.pdf"
