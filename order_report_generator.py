@@ -14,16 +14,19 @@ def generate_order_reports(orders,groups,prices):
     current_price = []
     for index, row in orders.iterrows():
         try:
-            current_price.append(prices[prices['Number'] == row['Number']]['OrderPriceInCU'].values[0])
+            if(prices[prices['Number'] == row['Number']]['Preisart'].values[0] == "CU"):
+                current_price.append(prices[prices['Number'] == row['Number']]['OrderPriceInCU'].values[0])
+            else:
+                current_price.append(prices[prices['Number'] == row['Number']]['OrderPriceInCU'].values[0] * row['OrderSizeKGL'])
         except:
             print('Price missing', row['Number'], index)
             current_price.append(0)
     orders['CurrentPriceCU'] = current_price
     orders['Cost'] = orders['OrderQytCU'] * orders['CurrentPriceCU']
 
-    results = Parallel(n_jobs=32)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
+    results = Parallel(n_jobs=16)(delayed(report_for_group)(orders, row) for index, row in expanded_groups.iterrows())
     # for index, row in expanded_groups.iterrows():
-    #     if(index > 200 and index < 220):
+    #     if(index > 590 and index < 595):
     #         print(str(index) + " of " + str(len(expanded_groups)))
     #         report_for_group(orders, row)
 
@@ -51,16 +54,15 @@ def report_for_group(orders:pd.DataFrame,group_exp:pd.Series):
     filename = "target/report_generation/Bestellung_"+str(group_exp['Einheitsnummer, '])+".tex"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename,'w') as f:
-        if group_exp[' Korrespondenzsprache, '] == "it":
+        if group_exp['Sprache, '] == "it":
             locale.setlocale(locale.LC_ALL, 'it_CH')
-        elif group_exp[' Korrespondenzsprache, '] == "fr":
+        elif group_exp['Sprache, '] == "fr":
             locale.setlocale(locale.LC_ALL, 'fr_CH')
         else:
             locale.setlocale(locale.LC_ALL, 'de_CH')
 
         init_file(orders.loc[orders['Einheitsnummer'] == group_exp['Einheitsnummer, ']],group_exp,f)
         for date in pd.date_range(group_exp['Startdatum'], group_exp['Enddatum'], freq='1d'):
-            #print(orders)
             orders_per_group_day = orders.loc[(orders['Einheitsnummer'] == group_exp['Einheitsnummer, ']) & (orders['MenuPlanDate'] == date),['Name', 'Number', 'OrderSizeKGL', 'CurrentPriceCU', 'OrderQytCU', 'TotalOrderAmount','Cost']]
             if(orders_per_group_day.empty):
                 empty_page(date, group_exp, f)
@@ -86,7 +88,7 @@ def report_for_group(orders:pd.DataFrame,group_exp:pd.Series):
     shutil.move(filename[0:-3]+"pdf",outputfilename)
 
 def init_file(orders:pd.DataFrame,group_exp:pd.Series,f):
-    i = open("resources/report_helper_files/first_page_"+str(group_exp[' Korrespondenzsprache, '])+".tex", "r")
+    i = open("resources/report_helper_files/first_page_"+str(group_exp['Sprache, '])+".tex", "r")
     a = i.read()
     cost = sum(orders['Cost'])
 
@@ -110,12 +112,12 @@ def init_file(orders:pd.DataFrame,group_exp:pd.Series,f):
     f.write(a)
 
 def end_file(group_exp:pd.Series,f):
-    i = open("resources/report_helper_files/last_page_"+str(group_exp[' Korrespondenzsprache, '])+".tex", "r")
+    i = open("resources/report_helper_files/last_page_"+str(group_exp['Sprache, '])+".tex", "r")
     a = i.read()
     f.write(a)
 
 def init_page(date,group_exp:pd.Series,f):
-    i = open("resources/report_helper_files/report_page_setup_"+str(group_exp[' Korrespondenzsprache, '])+".tex", "r")
+    i = open("resources/report_helper_files/report_page_setup_"+str(group_exp['Sprache, '])+".tex", "r")
     a = i.read()
     a = a.replace("$DATE$", tex_escape(str(date.strftime('%A %d.%m.%Y'))))
 
@@ -124,13 +126,13 @@ def init_page(date,group_exp:pd.Series,f):
     f.write(a)
 
 def empty_page(date, group_exp:pd.Series, f):
-    i = open("resources/report_helper_files/report_empty_page_setup_"+str(group_exp[' Korrespondenzsprache, '])+".tex", "r")
+    i = open("resources/report_helper_files/report_empty_page_setup_"+str(group_exp['Sprache, '])+".tex", "r")
     a = i.read()
     a = a.replace("$DATE$", tex_escape(str(date.strftime('&A %d.%m.%Y'))))
     f.write(a)
 
 def add_line(row,group_exp:pd.Series,f):
-    i = open("resources/report_helper_files/report_line_"+str(group_exp[' Korrespondenzsprache, '])+".tex", "r")
+    i = open("resources/report_helper_files/report_line_"+str(group_exp['Sprache, '])+".tex", "r")
     a = i.read()
     a=a.replace("$Name$", tex_escape(str(row['Name'])))
     a=a.replace("$Number$", tex_escape(str(row['Number'])))
@@ -141,7 +143,7 @@ def add_line(row,group_exp:pd.Series,f):
     f.write(a)
 
 def end_page(group_exp:pd.Series,f):
-    i = open("resources/report_helper_files/page_end_"+str(group_exp[' Korrespondenzsprache, '])+".tex", "r")
+    i = open("resources/report_helper_files/page_end_"+str(group_exp['Sprache, '])+".tex", "r")
     a = i.read()
     f.write(a)
 

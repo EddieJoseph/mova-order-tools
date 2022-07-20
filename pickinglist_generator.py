@@ -35,9 +35,7 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
             print('Product not found in classification', row['Number'])
             order.append(0)
 
-    #orders['CurrentPriceCU'] = current_price
     orders['KID'] = KID
-    #orders['Cost'] = orders['OrderQytCU'] * orders['CurrentPriceCU']
     orders['Class'] = classes
     orders['Order'] = order
 
@@ -50,7 +48,7 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
 def generate_pickinglists(kitchens:pd.DataFrame, orders:pd.DataFrame):
     results = Parallel(n_jobs=32)(delayed(generation_helper)(k_index, k_row, orders) for k_index, k_row in kitchens.iterrows())
     # for k_index, k_row in kitchens.iterrows():
-    #     if k_row['KüchenId, '] == 'K_40':
+    #     if k_row['KüchenId, '] == 'K_645':
     #         generation_helper(k_index, k_row, orders)
 
 def generation_helper(k_index, k_row:pd.Series, orders:pd.DataFrame):

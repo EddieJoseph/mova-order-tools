@@ -8,7 +8,11 @@ def generate_price_report(orders: pd.DataFrame, groups: pd.DataFrame, prices: pd
     KID = []
     for index, row in orders.iterrows():
         try:
-            current_price.append(prices[prices['Number'] == row['Number']]['OrderPriceInCU'].values[0])
+            if (prices[prices['Number'] == row['Number']]['Preisart'].values[0] == "CU"):
+                current_price.append(prices[prices['Number'] == row['Number']]['OrderPriceInCU'].values[0])
+            else:
+                current_price.append(
+                    prices[prices['Number'] == row['Number']]['OrderPriceInCU'].values[0] * row['OrderSizeKGL'])
         except:
             print('Price missing', row['Number'], index)
             current_price.append(0)
@@ -21,16 +25,11 @@ def generate_price_report(orders: pd.DataFrame, groups: pd.DataFrame, prices: pd
     orders['KID'] = KID
     orders['Cost'] = orders['OrderQytCU'] * orders['CurrentPriceCU']
 
-    # print(current_price)
     kitchen_cost_per_day = calculate_daily_prices(orders, kitchens)
     kitchen_cost_per_day.to_excel('Tageskosten.xlsx', index=False)
 
 
-
-# MIG111013000000
 def expand_kids(groups:pd.DataFrame):
-    #print()
-
     startdate = []
     enddate = []
     days = []
@@ -89,12 +88,6 @@ def expand_kids(groups:pd.DataFrame):
     kitchens['Butget'] = butget
     kitchens['Startdatum'] = startdaten
     kitchens['Enddatum'] = enddaten
-
-
-    #print(kitchens['KüchenId_Num'])
-
-
-    # kitchens.to_excel('Küchenaggregation.xlsx')
     return kitchens.sort_values(by=['KüchenId_Num'])
 
 
@@ -105,10 +98,6 @@ def calculate_daily_prices(orders: pd.DataFrame, kitchens: pd.DataFrame):
         orders_day = orders[orders['MenuPlanDate'] == date]
         cost_day = [];
         for index, row in kitchens.iterrows():
-
-            # print(orders_day['KID'])
-            #print(row['KüchenId, '])
-
             cost_day.append(orders_day[orders_day['KID'] == row['KüchenId, ']]['Cost'].sum())
         kitchens[date] = cost_day
     return kitchens
