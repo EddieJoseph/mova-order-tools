@@ -46,7 +46,7 @@ def generate_picking_lists(orders: pd.DataFrame, groups: pd.DataFrame, prices: p
     generate_pickinglists(kitchens, orders)
 
 def generate_pickinglists(kitchens:pd.DataFrame, orders:pd.DataFrame):
-    results = Parallel(n_jobs=32)(delayed(generation_helper)(k_index, k_row, orders) for k_index, k_row in kitchens.iterrows())
+    results = Parallel(n_jobs=8)(delayed(generation_helper)(k_index, k_row, orders) for k_index, k_row in kitchens.iterrows())
     # for k_index, k_row in kitchens.iterrows():
     #     if k_row['KüchenId, '] == 'K_645':
     #         generation_helper(k_index, k_row, orders)
